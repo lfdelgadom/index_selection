@@ -4,6 +4,7 @@ rm(list = ls())
 # Load necessary packages using 'pacman'
 library(pacman)
 pacman::p_load(tidyverse, FactoMineR, factoextra, readxl)
+source("https://raw.githubusercontent.com/Cassava2050/PPD/main/utilities_tidy.R")
 
 # Define the output folder and list files
 folder_output <- here::here("output//")
@@ -29,7 +30,7 @@ blupDF_kp <- read_excel(
 colnames(blupDF_kp)
 
 # Define traits of interest
-index_traits <- c("plant_type", "yield_ha", "DM_gravity")
+index_traits <- colnames(blupDF_kp)[-1]
 
 # Select relevant columns and drop rows with missing values
 index_dat <- blupDF_kp %>%
@@ -38,7 +39,7 @@ index_dat <- blupDF_kp %>%
 
 
 # Define a function for multi-trait PCA-based index selection
-pca_index <- function(data, id, variables = NULL, percentage = 0.20, b) {
+pca_index <- function(data, id, variables = NULL, percentage = 0.60, b) {
   # Convert data to a data frame
   data <- as.data.frame(data)
   
@@ -99,11 +100,11 @@ selIndex <- function(Y, b, scale = FALSE) {
 res.pca <- pca_index(
   data = index_dat, id = "accession_name",
   variables = index_traits,
-  b = c(-5, 10, 10), percentage = 0.25
+  b = c(-2.47, 1.044, 2.523, -.04, 1.412, 1.615), percentage = 0.60
 )
 
 # Save the PCA biplot as an image
-res.pca_final <- res.pca$final
+res.pca_final <- res.pca$final + theme_xiaofei()
 ggsave(paste("images/selection", Sys.Date(), ".png"),
        plot = res.pca_final, units = "in", dpi = 300, width = 7, height = 6
 )
@@ -123,3 +124,5 @@ selections <- blupDF_kp %>%
 
 # Save the selections to a CSV file
 write.csv(selections, paste0(folder_output, "selections_by_index.csv"), row.names = FALSE)
+
+
